@@ -1,0 +1,31 @@
+<html>
+
+<head>
+  <%- include ('templates/head') %>
+</head>
+
+<body>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <form class="user__form" action="/login" method="POST">
+      <h1>JL doc Generator</h1>
+      <div class="user__item">
+        <h3 class="input__label">ACCOUNT</h3>
+        <input class="input__field" type="text" name="username" />
+      </div>
+
+      <div class="user__item">
+        <h3 class="input__label">PASSWORD</h3>
+        <input class="input__field" type="password" name="password" />
+      </div>
+
+      <h3 class="remind">
+        <% if (errorMessage[0]) { %>
+          <%= errorMessage %>
+            <% } %>
+      </h3>
+
+      <input class="input__button" type='submit' value="Login" />
+    </form>
+</body>
+
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <%- include ('templates/head') %>
+  </head>
+
+  <body>
+    <%- include ('templates/nav_manage') %>
+
+    <div class="manage">
+      <h1>管理後台</h1>
+      
+      <div class="manage__board">
+        
+        <a class="manage__item" href="/manage/employee/add">
+          <i class="fa fa-user-plus" aria-hidden="true"></i>
+          <h3>建立員工資料</h3>
+        </a>
+        
+        <a class="manage__item" href="/manage/employee">
+          <i class="fa fa-group" aria-hidden="true"></i>
+          <h3>員工管理</h3>
+        </a>
+        
+        <a class="manage__item" href="/generator">
+          <i class="fa fa-file-word-o" aria-hidden="true"></i>
+          <h3>文件產生器</h3>
+        </a>
+        
+        <a class="manage__item" href="/">
+          <i class="fa fa-sign-out" aria-hidden="true"></i>
+          <h3>登出</h3>
+        </a>
+      
+      </div>
+    </div>
+  </body>
+</html>

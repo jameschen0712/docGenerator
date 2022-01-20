@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <%- include ('templates/head') %>
+    <script type="text/javascript" src="/js/upload_picture.js"></script>
+</head>
+
+<body>
+  <%- include ('templates/nav_manage') %>
+
+    <div class="manage">
+      <h1>編輯員工資料</h1>
+
+      <form method="POST" class="manage__edit" action="/manage/employee/edit/<%= employee.uid %>">
+        <div class="twins">
+            <div>
+                <h2>姓名：</h2>
+            </div>
+            <div>
+                <input type="text" name="name" value="<%= employee.name %>"/>
+            </div>
+            <div>
+                <h2>英文姓名：</h2>
+            </div>
+            <div>
+                <input type="text" name="english_name" value="<%= employee.english_name %>"/>
+            </div>
+        </div>
+
+
+        <div class="twins">
+            <div>
+               <h2>性別：</h2>
+            </div>
+            <div>
+                <select name="sex" >
+                    <%
+                        var options = [ "男", "女"];
+                        for ( var i = 0; i < options.length; i++ )
+                        {
+                            var selected = ( employee.sex == i) ? "selected" : "";
+                            %><option value="<%=i %>" <%=selected %>><%=options[i] %></option><%
+                        }
+                    %>
+                </select>
+            </div>
+            <div>
+                <h2>出生年：</h2>
+            </div>
+            <%
+            var d = employee.birthday.substring(0,4);
+            //console.log(d);
+            %>
+            <div>
+                <input type="number" id="start" name="birthday"  min="1900" max="2099" step="1" placeholder="西元年(ex:1999)" value="<%= d %>">
+            </div>
+        </div>
+
+        <div class="twins">
+            <div>
+              <h2>身份證字號：</h2>
+            </div>
+            <div>
+                <input type="text" name="id_number" value="<%= employee.id_number %>"/>  
+            </div>
+            <div>
+                <h2>電話：</h2>
+            </div>
+            <div>
+                <input type="text" name="tel" value="<%= employee.tel %>"/>
+            </div>
+        </div>
+
+        <div class="twins">
+          <div>
+            <h2>職稱：</h2>
+          </div>
+          <div>
+              <select name="job_title" value="<%= employee.job_title %>">
+                <%
+                var options = [ "總經理", "副總經理", "協理", "研發經理", "經理", "高級資深工程師", "資深工程師", "系統工程師", "前端工程師", "財務會計經理", "會計"];
+                for ( var i = 0; i < options.length; i++ )
+                {
+                    var selected = ( employee.job_title == i) ? "selected" : "";
+                    %><option value="<%=i %>" <%=selected %>><%=options[i] %></option><%
+                }
+                %>
+              </select> 
+          </div>
+          <div>
+              <h2>入職月：</h2>
+          </div>
+          <%
+            var d = employee.start_day.substring(0,7);
+            //console.log(d);
+          %>
+          <div>
+              <input type="month" id="start" name="start_day" value="<%= d %>">
+          </div>
+        </div>
+
+        <div class="twins">
+          <div>
+            <h2>畢業學校<br/>最高學歷</h2>
+          </div>
+          <div style="left: 150px;">
+            <input type="text" name="education" value="<%= employee.education %>"/>
+          </div>
+      </div>
+      <br/>
+        <div class="address">
+          <h2>通信地址：</h2>
+          <input type="text" name="address" value="<%= employee.address %>"/>
+        </div>
+
+        <div class="expertise" style="padding-top: 30px;">
+          <h2>專長：</h2>
+          <textarea name="expertise"><%= employee.expertise %></textarea>
+        </div>
+
+        <div class="experience">
+          <br/>
+          <div><h2>經歷  <i id="add_experience" style="color:black;cursor: pointer;" class="fa fa-list" aria-hidden="true" onclick="visibleExperienceInner()"></i></h2></div>
+
+          <!-- start new experience -->
+          <div class="experienceInner" style="visibility: hidden;">
+            <div><h1>經歷  <i id="add_experience" style="color:black;cursor: pointer;" class="fa fa-plus-circle" aria-hidden="true" onclick="addNewExperience()"></i><i id="close_experience" style="color:red;float:right;margin-right:20px;cursor: pointer;" class="fa fa-remove" aria-hidden="true" onclick="hiddenExperienceInner()"></i></h1></div>
+            <% for(var i = 0 ; i < experience.length ; i++) { %>
+              <% if(i != 0) { %>  
+                  <i class="fa fa-remove" style="color: red; cursor: pointer; float: left; position: absolute; top: <%= 200+(i-1)*130 %>px; padding: 10px;" onclick='removeIcon(this,true)'></i>
+              <% } %>
+                  <div class="twins">
+                        <div>
+                          <% if(i == 0) {%>
+                              <h2>現任服務機關：</h2>
+                          <% } else{ %>
+                              <h2>服務機關<br/>證照名稱</h2>
+                          <% } %>
+                        </div>
+                        <div>
+                            <input type="text" name="company_name" id="company_name" value="<%= experience[i].company_name %>" />    
+                        </div>
+                        <div>
+                            <% if(i == 0) {%>
+                              <h2>現任職務：</h2>
+                            <% } else{ %>
+                                <h2>職務：</h2>
+                            <% } %>
+                        </div>
+                        <div>
+                              <input type="text" name="ex_job_title" id="ex_job_title" value="<%= experience[i].job_title %>" />    
+                        </div>
+                  </div>
+
+                  <div class="twins">
+                        <div>
+                              <% if(i == 0) {%>
+                                <h2>開始月：</h2>
+                              <% } else{ %>
+                                  <h2>起：</h2>
+                              <% } %>
+                        </div>
+                        <div>
+                            <input type="month" id="ex_start_mon" name="ex_start_mon" value="<%= (experience[i].start_mon !== null) ? experience[i].start_mon.substring(0,7) : new Date().getFullYear()+'-'+(Array(2).join(0) + new Date().getMonth()+1).slice(-2)  %>" placeholder="西元年(ex:1999)"/>       
+                        </div>
+                        <% if(experience[i].is_now === false ) { %>
+                          <div>
+                              <% if(i == 0) {%>
+                                <h2>離職月：</h2>
+                              <% } else{ %>
+                                  <h2>迄：</h2>
+                              <% } %>
+                          </div>
+                          <div>
+                                <input type="month" id="ex_end_mon" name="ex_end_mon" value="<%= (experience[i].end_mon !== null) ? experience[i].end_mon.substring(0,7) : new Date().getFullYear()+'-'+(Array(2).join(0) + new Date().getMonth()+1).slice(-2)  %>" placeholder="西元年(ex:1999)"/>       
+                          </div>
+                        <% } %>
+                  </div>
+          <% } %>
+        </div>
+          <!-- end new experience -->
+          
+      </div>
+      <div class="project">
+          <div><h2>近年參與之相關工作計畫  <i id="add_project" style="color:black;cursor: pointer;" class="fa fa-list" aria-hidden="true" onclick="visibleProjectInner()"></i></h2></div>
+
+          <!-- start new project -->
+          <div class="projectInner" style="visibility: hidden;">
+            <div><h1>新增工作計畫  <i id="add_project" style="color:black;cursor: pointer;" class="fa fa-plus-circle" aria-hidden="true" onclick="addNewProject()"></i><i id="close_project" style="color:red;float:right;margin-right:20px;cursor: pointer;" class="fa fa-remove" aria-hidden="true" onclick="hiddenProjectInner()"></i></h1></div>
+            <% for(var i = 0 ; i < project.length ; i++) { %>
+            <% if(i != 0) { %>  
+              <i class="fa fa-remove" style="color: red; cursor: pointer; float: left; position: absolute; top: <%= 200+(i-1)*130 %>px; padding: 10px;" onclick='removeIcon(this,false)'></i>
+            <% } %>
+            <div class="twins">
+                  <div>
+                        <h2>計畫所屬單位：</h2>
+                  </div>
+                  <div>
+                      <input type="text" name="project_company" id="project_company" value="<%= project[i].project_company %>" />    
+                  </div>
+                  <div>
+                        <h2>計畫名稱：</h2>
+                  </div>
+                  <div>
+                        <input type="text" name="project_name" id="project_name" value="<%= project[i].project_name %>" />
+                  </div>
+            </div>
+
+            <div class="twins">
+                  <div>
+                        <% if(i == 0) {%>
+                          <h2>開始年：</h2>
+                        <% } else{ %>
+                            <h2>起：</h2>
+                        <% } %>
+                  </div>
+                  <div>
+                      <input type="number" id="start_year" name="start_year" min="1900" max="2099" step="1" placeholder="西元年(ex:1999)" value="<%= (project[i].start_year !== null) ? project[i].start_year.substring(0,4) : new Date().getFullYear()%>" />     
+                  </div>
+                  <div>
+                        <% if(i == 0) {%>
+                          <h2>結束年：</h2>
+                        <% } else{ %>
+                            <h2>迄：</h2>
+                        <% } %>
+                  </div>
+                  <div>
+                        <input type="number" id="end_year" name="end_year" min="1900" max="2099" step="1" placeholder="西元年(ex:1999)" value="<%= (project[i].end_year !== null) ? project[i].end_year.substring(0,4) : new Date().getFullYear()%>" />
+                  </div>
+            </div>
+            <% } %>
+          </div>
+          <!-- end new project -->
+      </div>
+
+        <div class="remind">
+          <% if (errorMessage[0]) { %>
+            <%= errorMessage %>
+              <% } %>
+        </div>
+        <script>
+          var fixTop = 200;
+          var expFixCount = document.querySelectorAll('#company_name').length-1;
+          var proFixCount = document.querySelectorAll('#project_company').length-1;
+          function removeIcon(ele, exp) {
+                //console.log(ele);
+                //console.log(ele.nextSibling.nextSibling);
+                //console.log(ele.nextSibling.nextSibling.nextSibling.nextSibling);
+                ele.nextSibling.nextSibling.nextSibling.nextSibling.remove();
+                ele.nextSibling.nextSibling.remove();
+                ele.remove();
+                if(exp)
+                {
+                  expFixCount--;
+                  for(var i = 1 ; i < document.querySelectorAll('.experienceInner .fa.fa-remove').length ; i++)
+                  {
+                    document.querySelectorAll('.experienceInner .fa.fa-remove')[i].style.top = fixTop+(i-1)*130+'px';
+                  }
+                }
+                else
+                {
+                  proFixCount--;
+                  for(var i = 1 ; i < document.querySelectorAll('.projectInner .fa.fa-remove').length ; i++)
+                  {
+                    document.querySelectorAll('.projectInner .fa.fa-remove')[i].style.top = fixTop+(i-1)*130+'px';
+                  }
+                }
+          }
+          function addNewExperience(){
+        /* 建立第一個twinsdiv */
+              var twinsDiv = document.createElement("div");
+              var firstDiv = document.createElement("div");
+              var secondDiv = document.createElement("div");
+              var thirdDiv = document.createElement("div");
+              var forthDiv = document.createElement("div");
+              var firstH2 = document.createElement("h2");
+              var secondH2 = document.createElement("h2");
+              var firstInput = document.createElement("input");
+              var secondInput = document.createElement("input");
+              var firstTextnode = document.createTextNode("服務機關");
+              var lineBreak = document.createElement("br");
+              var firstTextnode2 = document.createTextNode("證照名稱");
+              var secondTextnode = document.createTextNode("職務：");
+              var icon = document.createElement("i");
+        /* 設定DOM屬性 */
+              twinsDiv.className = 'twins';
+              firstInput.type = 'text';
+              firstInput.name = 'company_name';
+              firstInput.id = 'company_name';
+              secondInput.type = 'text';
+              secondInput.name = 'ex_job_title';
+              secondInput.id = 'ex_job_title';
+
+              icon.className = 'fa fa-remove';
+              icon.style.color = 'red';
+              icon.style.cursor = 'pointer';
+              icon.style.float = 'left';
+              icon.style.position = 'absolute';
+              icon.style.top = fixTop+expFixCount*130+'px';
+              icon.style.padding = 10+'px';
+              icon.onclick = function () {
+                this.nextSibling.nextSibling.remove();
+                this.nextSibling.remove();
+                this.remove();
+                expFixCount--;
+                for(var i = 1 ; i < document.querySelectorAll('.experienceInner .fa.fa-remove').length ; i++)
+                {
+                  document.querySelectorAll('.experienceInner .fa.fa-remove')[i].style.top = fixTop+(i-1)*130+'px';
+                }
+              };
+              expFixCount++;
+              
+
+         /* 加入到各DOM內最後加入到experience底下 */       
+              firstH2.append(firstTextnode);
+              firstH2.append(lineBreak);
+              firstH2.append(firstTextnode2);
+              firstDiv.append(firstH2);
+
+              secondDiv.append(firstInput);
+
+              secondH2.append(secondTextnode);
+              thirdDiv.append(secondH2);
+
+              forthDiv.append(secondInput);
+
+              document.querySelector('.experienceInner').append(icon);
+              twinsDiv.append(firstDiv);
+              twinsDiv.append(secondDiv);
+              twinsDiv.append(thirdDiv);
+              twinsDiv.append(forthDiv);
+
+              document.querySelector('.experienceInner').append(twinsDiv);
+
+          /* 建立第二個twinsdiv */
+              var twinsDiv = document.createElement("div");
+              var firstDiv = document.createElement("div");
+              var secondDiv = document.createElement("div");
+              var thirdDiv = document.createElement("div");
+              var forthDiv = document.createElement("div");
+              var firstH2 = document.createElement("h2");
+              var secondH2 = document.createElement("h2");
+              var firstInput = document.createElement("input");
+              var secondInput = document.createElement("input");
+              var firstTextnode = document.createTextNode("起：");
+              var secondTextnode = document.createTextNode("迄：");
+          /* 設定DOM屬性 */
+              twinsDiv.className = 'twins';
+              firstInput.type = 'month';
+              firstInput.name = 'ex_start_mon';
+              firstInput.id = 'ex_start_mon';
+              secondInput.type = 'month';
+              secondInput.name = 'ex_end_mon';
+              secondInput.id = 'ex_end_mon';
+          /* 加入到各DOM內最後加入到experience底下 */ 
+              firstH2.append(firstTextnode);
+              firstDiv.append(firstH2);
+
+              secondDiv.append(firstInput);
+
+              secondH2.append(secondTextnode);
+              thirdDiv.append(secondH2);
+
+              forthDiv.append(secondInput);
+
+              twinsDiv.append(firstDiv);
+              twinsDiv.append(secondDiv);
+              twinsDiv.append(thirdDiv);
+              twinsDiv.append(forthDiv);
+
+              document.querySelector('.experienceInner').append(twinsDiv);
+      }
+
+
+
+
+
+      function addNewProject(){
+        /* 建立第一個twinsdiv */
+              var twinsDiv = document.createElement("div");
+              var firstDiv = document.createElement("div");
+              var secondDiv = document.createElement("div");
+              var thirdDiv = document.createElement("div");
+              var forthDiv = document.createElement("div");
+              var firstH2 = document.createElement("h2");
+              var secondH2 = document.createElement("h2");
+              var firstInput = document.createElement("input");
+              var secondInput = document.createElement("input");
+              var firstTextnode = document.createTextNode("計畫所屬單位：");
+              var secondTextnode = document.createTextNode("計畫名稱：");
+              var icon = document.createElement("i");
+        /* 設定DOM屬性 */
+              twinsDiv.className = 'twins';
+              firstInput.type = 'text';
+              firstInput.name = 'project_company';
+              firstInput.id = 'project_company';
+              secondInput.type = 'text';
+              secondInput.name = 'project_name';
+              secondInput.id = 'project_name';
+
+              icon.className = 'fa fa-remove';
+              icon.style.color = 'red';
+              icon.style.cursor = 'pointer';
+              icon.style.float = 'left';
+              icon.style.position = 'absolute';
+              icon.style.top = fixTop+proFixCount*130+'px';
+              icon.style.padding = 10+'px';
+              icon.onclick = function () {
+                this.nextSibling.nextSibling.remove();
+                this.nextSibling.remove();
+                this.remove();
+                proFixCount--;
+                for(var i = 1 ; i < document.querySelectorAll('.projectInner .fa.fa-remove').length ; i++)
+                {
+                  document.querySelectorAll('.projectInner .fa.fa-remove')[i].style.top = fixTop+(i-1)*130+'px';
+                }
+              };
+              proFixCount++;
+              
+
+         /* 加入到各DOM內最後加入到experience底下 */       
+              firstH2.append(firstTextnode);
+              firstDiv.append(firstH2);
+
+              secondDiv.append(firstInput);
+
+              secondH2.append(secondTextnode);
+              thirdDiv.append(secondH2);
+
+              forthDiv.append(secondInput);
+
+              document.querySelector('.projectInner').append(icon);
+              twinsDiv.append(firstDiv);
+              twinsDiv.append(secondDiv);
+              twinsDiv.append(thirdDiv);
+              twinsDiv.append(forthDiv);
+
+              document.querySelector('.projectInner').append(twinsDiv);
+
+          /* 建立第二個twinsdiv */
+              var twinsDiv = document.createElement("div");
+              var firstDiv = document.createElement("div");
+              var secondDiv = document.createElement("div");
+              var thirdDiv = document.createElement("div");
+              var forthDiv = document.createElement("div");
+              var firstH2 = document.createElement("h2");
+              var secondH2 = document.createElement("h2");
+              var firstInput = document.createElement("input");
+              var secondInput = document.createElement("input");
+              var firstTextnode = document.createTextNode("開始年：");
+              var secondTextnode = document.createTextNode("結束年：");
+          /* 設定DOM屬性 */
+              twinsDiv.className = 'twins';
+              firstInput.type = 'year';
+              firstInput.name = 'start_year';
+              firstInput.id = 'start_year';
+              firstInput.placeholder = '西元年(ex:1999)';
+              secondInput.type = 'year';
+              secondInput.name = 'end_year';
+              secondInput.id = 'end_year';
+              secondInput.placeholder = '西元年(ex:1999)';
+          /* 加入到各DOM內最後加入到project底下 */ 
+              firstH2.append(firstTextnode);
+              firstDiv.append(firstH2);
+
+              secondDiv.append(firstInput);
+
+              secondH2.append(secondTextnode);
+              thirdDiv.append(secondH2);
+
+              forthDiv.append(secondInput);
+
+              twinsDiv.append(firstDiv);
+              twinsDiv.append(secondDiv);
+              twinsDiv.append(thirdDiv);
+              twinsDiv.append(forthDiv);
+
+              document.querySelector('.projectInner').append(twinsDiv);
+      }
+
+          function hiddenExperienceInner(){
+            document.querySelector('.experienceInner').style.visibility = 'hidden';
+          }
+
+          function visibleExperienceInner(){
+            document.querySelector('.experienceInner').style.visibility = 'visible';
+          }
+
+          function hiddenProjectInner(){
+            document.querySelector('.projectInner').style.visibility = 'hidden';
+          }
+
+          function visibleProjectInner(){
+            document.querySelector('.projectInner').style.visibility = 'visible';
+          }
+        </script>
+        <div class="post__btn">
+          <button type="submit" class="edit-post__btn">送出</button>
+          <a class="return-btn" href="/manage/employee">返回</a>
+        </div>
+      </form>
+    </div>
+</body>
+
+</html>
