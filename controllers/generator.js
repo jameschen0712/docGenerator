@@ -104,10 +104,10 @@ const generatorController = {
             function Wait(type, obj) {
                 if(now_fin == all_fin-1)
                 {
-                    console.log('result ============================================== '+JSON.stringify(result.rows));
-                    console.log('pro ============================================== '+JSON.stringify(result_pro.rows));
-                    console.log('exp ============================================== '+JSON.stringify(result_exp.rows));
-                    console.log("finished");
+                    // console.log('result ============================================== '+JSON.stringify(result.rows));
+                    // console.log('pro ============================================== '+JSON.stringify(result_pro.rows));
+                    // console.log('exp ============================================== '+JSON.stringify(result_exp.rows));
+                    // console.log("finished");
                     now_fin = 0;
                     for(let i = 0 ; i < result.rowCount ; i++)
                     {
