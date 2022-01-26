@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <%- include ('templates/head') %>
+    <script type="text/javascript" src="/js/upload_picture.js"></script>
+</head>
+
+<body>
+  <%- include ('templates/nav_manage') %>
+
+    <div class="manage">
+      <!--<h1>新增專案資料</h1>-->
+
+      <form method="POST" class="manage__edit" action="/manage/project/add">
+            <!-- start new project -->
+          <div class="projectInner">
+            <div><h1>新增工作計畫  <i id="add_project" style="color:black;cursor: pointer;" class="fa fa-plus-circle" aria-hidden="true" onclick="addNewProject()"></i></h1></div>
+            <div class="twins">
+                  <div>
+                        <h2>計畫所屬單位：</h2>
+                  </div>
+                  <div>
+                      <input type="text" name="project_company" id="project_company" />    
+                  </div>
+                  <div>
+                        <h2>計畫名稱：</h2>
+                  </div>
+                  <div>
+                        <input type="text" name="project_name" id="project_name" />
+                  </div>
+            </div>
+
+            <div class="twins">
+                  <div>
+                        <h2>開始年：</h2>
+                  </div>
+                  <div>
+                    <input type="number" id="start_year" name="start_year" min="1990" max="2099" step="1" placeholder="西元年(ex:1999)"  />    
+                  </div>
+                  <div>
+                        <h2>結束年：</h2>
+                  </div>
+                  <div>
+                    <input type="number" id="end_year" name="end_year" min="1990" max="2099" step="1" placeholder="西元年(ex:1999)"  />
+                  </div>
+            </div>
+          </div>
+            <!-- end new project -->
+        <div class="remind">
+          <% if (errorMessage[0]) { %>
+            <%= errorMessage %>
+              <% } %>
+        </div>
+
+        <div class="post__btn">
+          <button type="submit" class="edit-post__btn">送出</button>
+          <a class="return-btn" href="/manage">返回</a>
+        </div>
+      </form>
+    </div>
+    <script>
+      var fixTop = 180;
+      var proFixCount = 0;
+      function addNewProject(){
+        /* 建立第一個twinsdiv */
+              var twinsDiv = document.createElement("div");
+              var firstDiv = document.createElement("div");
+              var secondDiv = document.createElement("div");
+              var thirdDiv = document.createElement("div");
+              var forthDiv = document.createElement("div");
+              var firstH2 = document.createElement("h2");
+              var secondH2 = document.createElement("h2");
+              var firstInput = document.createElement("input");
+              var secondInput = document.createElement("input");
+              var firstTextnode = document.createTextNode("計畫所屬單位：");
+              var secondTextnode = document.createTextNode("計畫名稱：");
+              var icon = document.createElement("i");
+        /* 設定DOM屬性 */
+              twinsDiv.className = 'twins';
+              firstInput.type = 'text';
+              firstInput.name = 'project_company';
+              firstInput.id = 'project_company';
+              secondInput.type = 'text';
+              secondInput.name = 'project_name';
+              secondInput.id = 'project_name';
+
+              icon.className = 'fa fa-remove';
+              icon.style.color = 'red';
+              icon.style.cursor = 'pointer';
+              icon.style.float = 'left';
+              icon.style.position = 'absolute';
+              icon.style.top = fixTop+proFixCount*130+'px';
+              icon.style.left = '-35px';
+              icon.style.padding = 10+'px';
+              icon.onclick = function () {
+                this.nextSibling.nextSibling.remove();
+                this.nextSibling.remove();
+                this.remove();
+                proFixCount--;
+                for(var i = 0 ; i < document.querySelectorAll('.projectInner .fa.fa-remove').length ; i++)
+                {
+                  document.querySelectorAll('.projectInner .fa.fa-remove')[i].style.top = fixTop+i*130+'px';
+                }
+              };
+              proFixCount++;
+              
+
+         /* 加入到各DOM內最後加入到experience底下 */       
+              firstH2.append(firstTextnode);
+              firstDiv.append(firstH2);
+
+              secondDiv.append(firstInput);
+
+              secondH2.append(secondTextnode);
+              thirdDiv.append(secondH2);
+
+              forthDiv.append(secondInput);
+
+              document.querySelector('.projectInner').append(icon);
+              twinsDiv.append(firstDiv);
+              twinsDiv.append(secondDiv);
+              twinsDiv.append(thirdDiv);
+              twinsDiv.append(forthDiv);
+
+              document.querySelector('.projectInner').append(twinsDiv);
+
+          /* 建立第二個twinsdiv */
+              var twinsDiv = document.createElement("div");
+              var firstDiv = document.createElement("div");
+              var secondDiv = document.createElement("div");
+              var thirdDiv = document.createElement("div");
+              var forthDiv = document.createElement("div");
+              var firstH2 = document.createElement("h2");
+              var secondH2 = document.createElement("h2");
+              var firstInput = document.createElement("input");
+              var secondInput = document.createElement("input");
+              var firstTextnode = document.createTextNode("開始年：");
+              var secondTextnode = document.createTextNode("結束年：");
+          /* 設定DOM屬性 */
+              twinsDiv.className = 'twins';
+              firstInput.type = 'year';
+              firstInput.name = 'start_year';
+              firstInput.id = 'start_year';
+              firstInput.placeholder = '西元年(ex:1999)';
+              secondInput.type = 'year';
+              secondInput.name = 'end_year';
+              secondInput.id = 'end_year';
+              secondInput.placeholder = '西元年(ex:1999)';
+          /* 加入到各DOM內最後加入到project底下 */ 
+              firstH2.append(firstTextnode);
+              firstDiv.append(firstH2);
+
+              secondDiv.append(firstInput);
+
+              secondH2.append(secondTextnode);
+              thirdDiv.append(secondH2);
+
+              forthDiv.append(secondInput);
+
+              twinsDiv.append(firstDiv);
+              twinsDiv.append(secondDiv);
+              twinsDiv.append(thirdDiv);
+              twinsDiv.append(forthDiv);
+
+              document.querySelector('.projectInner').append(twinsDiv);
+      }
+      function hiddenProjectInner(){
+        document.querySelector('.projectInner').style.visibility = 'hidden';
+      }
+
+      function visibleProjectInner(){
+        document.querySelector('.projectInner').style.visibility = 'visible';
+      }
+    </script>
+</body>
+
+</html>
