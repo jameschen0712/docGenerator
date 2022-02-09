@@ -13,28 +13,6 @@
       <h1>新增員工資料</h1>
 
       <form method="POST" class="manage__edit" action="/manage/employee/add">
-        <!--<div class="image">
-          <div class="image__block">
-            <img id="image" src="/images/upload.png" alt="">
-          </div>
-          <input class="image__url" hidden type="text" name="url" value="" readonly />
-          <input class="image__upload" type="file"/>
-        </div>-->
-
-        <!--<div class="title">
-          <h3>員工名稱</h3>
-          <input type="text" name="title" maxlength="20" />
-        </div>
-
-        <div class="content">
-          <h3>價格（請填數字）</h3>
-          <input type="num" min="1" max="5000" name="price" />
-        </div>
-
-        <div class="order">
-          <h3>順序（請填數字，順序需在數字 1 ~ 99 之間）</h3>
-          <input type="number" min="1" max="100" name="order" />
-        </div>-->
         <div class="twins">
             <div>
                 <h2>姓名：</h2>
@@ -128,33 +106,6 @@
         <div class="expertise" style="padding-top: 30px;">
           <h2>專長：</h2>
           <textarea name="expertise"></textarea>
-          <!--<div class="chbox">
-            <p>
-              <input type="checkbox" id="cbox2" value="second_checkbox" checked="checked">
-              <label for="cbox2">This is the second checkbox, which is checked</label>
-            </p>
-            <p>
-              <input type="checkbox" id="cbox2" value="second_checkbox" checked="checked">
-              <label for="cbox2">This is the second checkbox, which is checked</label>
-            </p>
-            <p>
-              <input type="checkbox" id="cbox2" value="second_checkbox" checked="checked">
-              <label for="cbox2">This is the second checkbox, which is checked</label>
-            </p>
-            <p>
-              <input type="checkbox" id="cbox2" value="second_checkbox" checked="checked">
-              <label for="cbox2">This is the second checkbox, which is checked</label>
-            </p>
-            <p>
-              <input type="checkbox" id="cbox2" value="second_checkbox" checked="checked">
-              <label for="cbox2">This is the second checkbox, which is checked</label>
-            </p>
-            <p>
-              <input type="checkbox" id="cbox2" value="second_checkbox" checked="checked">
-              <label for="cbox2">This is the second checkbox, which is checked</label>
-            </p>
-          </div>
-        -->
         </div>
 
         <div class="experience">
@@ -202,37 +153,23 @@
 
             <!-- start new project -->
             <div class="projectInner" style="visibility: hidden;">
-              <div><h1>新增工作計畫  <i id="add_project" style="color:black;cursor: pointer;" class="fa fa-plus-circle" aria-hidden="true" onclick="addNewProject()"></i><i id="close_project" style="color:red;float:right;margin-right:20px;cursor: pointer;" class="fa fa-remove" aria-hidden="true" onclick="hiddenProjectInner()"></i></h1></div>
-              <div class="twins">
-                    <div>
-                          <h2>計畫所屬單位：</h2>
-                    </div>
-                    <div>
-                        <input type="text" name="project_company" id="project_company" />    
-                    </div>
-                    <div>
-                          <h2>計畫名稱：</h2>
-                    </div>
-                    <div>
-                          <input type="text" name="project_name" id="project_name" />
-                    </div>
-              </div>
-
-              <div class="twins">
-                    <div>
-                          <h2>開始年：</h2>
-                    </div>
-                    <div>
-                      <input type="number" id="start_year" name="start_year" min="1900" max="2099" step="1" placeholder="西元年(ex:1999)" value="<%= new Date().getFullYear() %>" />    
-                    </div>
-                    <div>
-                          <h2>結束年：</h2>
-                    </div>
-                    <div>
-                      <input type="number" id="end_year" name="end_year" min="1900" max="2099" step="1" placeholder="西元年(ex:1999)" value="<%= new Date().getFullYear() %>" />
-                    </div>
-              </div>
+              <div><h1><i id="close_project" style="color:red;float:right;margin-right:20px;cursor: pointer;" class="fa fa-remove" aria-hidden="true" onclick="hiddenProjectInner()"></i></h1></div>
+              <div class="facet-container">
+                <div class="left">
+                  <label>所有專案</label>
+                  <ul id="allFacets" class="facet-list">
+                    <% for(var i = 0 ; i < project.length ; i++) { %>
+                      <li class="facet"><%= project[i].project_company + '-' + project[i].project_name %><input type="hidden" name="all_project" value="<%= project[i].pid %>" /></li>
+                    <% } %>
+                  </ul>
+                </div>
+                <div class="right">
+                  <label>參與專案</label>
+                  <ul id="userFacets" class="facet-list">
+                  </ul>
+                </div>
             </div>
+          </div>
             <!-- end new project -->
         </div>
         <div class="remind">
@@ -247,6 +184,8 @@
         </div>
       </form>
     </div>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+    <script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js'></script>
     <script>
       var fixTop = 200;
       var expFixCount = 0;
@@ -479,18 +418,32 @@
         document.querySelector('.projectInner').style.visibility = 'visible';
       }
 
-      // function changeIcon(ele){
-      //   if(ele.classList.value == 'fa fa-square-o')
-      //   {
-      //     ele.classList.remove('fa-square-o');
-      //     ele.classList.add('fa-check-square-o');
-      //   }
-      //   else
-      //   {
-      //     ele.classList.remove('fa-check-square-o');
-      //     ele.classList.add('fa-square-o');
-      //   }
-      // }
+      $(function() {
+            $("#allFacets, #userFacets").sortable({
+              connectWith: "ul",
+              placeholder: "placeholder",
+              delay: 150,
+              update : function(event, ui){       //更新排序之後
+                $(".right input[name='all_project']").attr('name','user_project');
+                $(".left input[name='user_project']").attr('name','all_project');
+              }
+            })
+            .disableSelection()
+            .dblclick( function(e){
+              var item = e.target;
+              if (e.currentTarget.id === 'allFacets') {
+                //move from all to user
+                $(item).fadeOut('fast', function() {
+                  $(item).appendTo($('#userFacets')).fadeIn('slow');
+                });
+              } else {
+                //move from user to all
+                $(item).fadeOut('fast', function() {
+                  $(item).appendTo($('#allFacets')).fadeIn('slow');
+                });
+              }
+            });
+          });
     </script>
 </body>
 

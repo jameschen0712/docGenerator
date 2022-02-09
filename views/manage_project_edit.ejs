@@ -12,7 +12,7 @@
     <div class="manage">
       <h1>編輯專案計畫資料</h1>
 
-      <form method="POST" class="manage__edit" action="/manage/project/add">
+      <form method="POST" class="manage__edit" action="/manage/project/edit">
         <!-- start new project -->
       <div class="projectInner">
         <div class="twins">
@@ -44,6 +44,7 @@
                 <input type="number" id="end_year" name="end_year" min="1990" max="2099" step="1" placeholder="西元年(ex:1999)" value="<%= project.end_year.substring(0,4) %>"/>
               </div>
         </div>
+        <input type="hidden" id="pid" name="pid" value="<%= project.pid %>"/>
       </div>
         <!-- end new project -->
     <div class="remind">
