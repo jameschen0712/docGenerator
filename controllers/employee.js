@@ -63,9 +63,6 @@ const Project = db.sequelize.define('project', {
       primaryKey: true,
       autoIncrement: true
     },
-    uid: {
-      type: db.Sequelize.INTEGER,
-    },
     project_company: {
       type: db.Sequelize.STRING,
     },
@@ -114,6 +111,23 @@ const Experience = db.sequelize.define('experience', {
     // 其它的 model 選項填寫在這裡
   });
   
+const Project_employee = db.sequelize.define('project_employee', {
+    id: {
+      type: db.Sequelize.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    pid: {
+      type: db.Sequelize.INTEGER,
+    },
+    uid: {
+      type: db.Sequelize.INTEGER,
+    }
+    // Model 的屬性都是定義在這裡
+  }, {
+    freezeTableName: true
+    // 其它的 model 選項填寫在這裡
+  });
 
 const job_title_arr = ['總經理', '副總經理', '協理', '研發經理', '經理', '高級資深工程師', '資深工程師', '系統工程師', '前端工程師', '財務會計經理', '會計'];
 
@@ -150,14 +164,24 @@ const employeeController = {
       });
   },
 
-  add: (req, res) => res.render('manage_employee_add'),
+  add: (req, res) => {
+    Project.findAll({
+    })
+    .then(project => {
+      res.render('manage_employee_add', { project })
+    })
+    .catch((err) => {
+      console.log(err);
+      return next();
+    });
+    },
 
   handleAdd: (req, res) => {
     const {
       name, english_name, sex, birthday, id_number, tel, job_title, start_day, education, address, expertise
     } = req.body;
     const {company_name, ex_job_title, ex_start_mon, ex_end_mon} = req.body;
-    const {project_company, project_name, start_year, end_year} = req.body;
+    const {user_project} = req.body;
     const state = 1;
     const pwd = '000000';
     var new_uid = 0;
@@ -180,47 +204,173 @@ const employeeController = {
                 Employee.max('uid',{
                   where: {uid: {[db.Sequelize.Op.ne]: '1'}},
                 })
-                /* 寫入 project */ 
+                /* 寫入 Experience */ 
                   .then(employee => {
                         new_uid = employee;
                         console.log('ans = '+ex_start_mon[0]);
                         let today = new Date();
                         console.log('req.body = '+JSON.stringify(req.body));
-                        for(let i = 0 ; i < company_name.length ; i++)
+                        console.log("typeof(company_name) = "+typeof(company_name));
+                        console.log("insert Experience success");
+                        if(typeof(company_name) === 'string')
                         {
                           Experience.create({
-                            uid: new_uid, company_name: company_name[i], job_title: ex_job_title[i], start_mon: ex_start_mon[i], end_mon:  (i == 0) ? today : ex_end_mon[i-1], is_now: (i == 0) ? true : false
+                                uid: new_uid, company_name: company_name, job_title: ex_job_title, start_mon: ex_start_mon, end_mon:  today, is_now: true
                           })
-                          /* 寫入 Experience */ 
-                          .then(() => {
-                                console.log("insert Experience success");
-                                if(i == company_name.length-1)
+                            .then(() => {
+                              //user_project為單筆資料
+                              if(typeof(user_project) === 'string')
+                              {
+                                /* 寫入 Experience */ 
+                                Project_employee.create({ 
+                                      uid: new_uid, pid: user_project
+                                })
+                                  .then(() => {console.log("insert project_employee success string");})
+                                  .catch((err) => {console.log("insert project_employee err = "+err);})
+                              } 
+                              //user_project不為單筆資料
+                              else
+                              {
+                                for(let i = 0 ; i < user_project.length ; i++)
                                 {
-                                  for(let j = 0 ; j < project_company.length ; j++)
-                                  {
-                                    Project.create({
-                                    uid: new_uid, project_company: project_company[j], project_name: project_name[j], start_year: start_year[j], end_year: end_year[j]
+                                  if(i < user_project.length - 1)
+                                  Project_employee.create({/* 寫入 Experience */ 
+                                      uid: new_uid, pid: user_project[i]
+                                  })
+                                  else{
+                                    Project_employee.create({/* 寫入 Experience */ 
+                                      uid: new_uid, pid: user_project[i]
                                     })
-                                    .then(() => {console.log("insert Project success");})
-                                    .catch((err) => {console.log("insert Project err = "+err);})
+                                    .then(() => {console.log("insert project_employee success array");})
+                                    .catch((err) => {console.log("insert project_employee err = "+err);})
                                   }
+                                } 
+                              }})
+                              .catch((err) => {console.log("insert Experience err = "+err);})
+                        } 
+                        else
+                        {
+                            //逐筆寫入 experience
+                            for(let i = 0 ; i < company_name.length ; i++)
+                              {
+                                //experience經歷超過一筆資料
+                                if(Array.isArray(ex_end_mon))
+                                {
+                                    Experience.create({
+                                        uid: new_uid, company_name: company_name[i], job_title: ex_job_title[i], start_mon: ex_start_mon[i], end_mon:  (i == 0) ? today : ex_end_mon[i-1], is_now: (i == 0) ? true : false
+                                    })
+                                    .then(() => {
+                                      console.log("insert Experience success");
+                                      if(i == company_name.length-1)
+                                      {
+                                        //user_project為單筆資料
+                                        if(typeof(user_project) === 'string')
+                                        {
+                                          /* 寫入 Experience */ 
+                                          Project_employee.create({ 
+                                                uid: new_uid, pid: user_project
+                                          })
+                                            .then(() => {console.log("insert project_employee success string");})
+                                            .catch((err) => {console.log("insert project_employee err = "+err);})
+                                        } 
+                                        //user_project不為單筆資料
+                                        else
+                                        {
+                                          for(let i = 0 ; i < user_project.length ; i++)
+                                          {
+                                            if(i < user_project.length - 1)
+                                            Project_employee.create({/* 寫入 Experience */ 
+                                                uid: new_uid, pid: user_project[i]
+                                            })
+                                            else{
+                                              Project_employee.create({/* 寫入 Experience */ 
+                                                uid: new_uid, pid: user_project[i]
+                                              })
+                                              .then(() => {console.log("insert project_employee success array");})
+                                              .catch((err) => {console.log("insert project_employee err = "+err);})
+                                            }
+                                          } 
+                                        }
+                                      }
+                                    })
+                                    .catch((err) => {
+                                      console.log("get employee max uid or insert Experience err = "+err);
+                                    });
                                 }
-                          })
-                        .catch((err) => {
-                          console.log("get employee max uid or insert Experience err = "+err);
-                        });
+                                //experience經歷只有一筆資料
+                                else
+                                {
+                                  Experience.create({
+                                        uid: new_uid, company_name: company_name[i], job_title: ex_job_title[i], start_mon: ex_start_mon[i], end_mon:  (i == 0) ? today : ex_end_mon, is_now: (i == 0) ? true : false
+                                  })
+                                  .then(() => {
+                                    console.log("insert Experience success");
+                                    if(i == company_name.length-1)
+                                    {
+                                      //user_project為單筆資料
+                                      if(typeof(user_project) === 'string')
+                                      {
+                                        /* 寫入 Experience */ 
+                                        Project_employee.create({
+                                              uid: new_uid, pid: user_project
+                                        })
+                                          .then(() => {console.log("insert project_employee success string");})
+                                          .catch((err) => {console.log("insert project_employee err = "+err);})
+                                      } 
+                                      //user_project不為單筆資料
+                                      else
+                                      {
+                                        for(let i = 0 ; i < user_project.length ; i++)
+                                        {
+                                          if(i < user_project.length - 1)
+                                          Project_employee.create({/* 寫入 Experience */ 
+                                              uid: new_uid, pid: user_project[i]
+                                          })
+                                          else{
+                                            Project_employee.create({/* 寫入 Experience */ 
+                                              uid: new_uid, pid: user_project[i]
+                                            })
+                                            .then(() => {console.log("insert project_employee success array");})
+                                            .catch((err) => {console.log("insert project_employee err = "+err);})
+                                          }
+                                        } 
+                                      }
+                                    }
+                                  })
+                                  .catch((err) => {
+                                    console.log("get employee max uid or insert Experience err = "+err);
+                                  });
+                                }
+                              }
                         }
-                      if(company_name.length == 0)
-                      {
-                        for(let j = 0 ; j < project_company.length ; j++)
-                                  {
-                                    Project.create({
-                                    uid: new_uid, project_company: project_company[j], project_name: project_name[j], start_year: start_year[j], end_year: end_year[j]
-                                    })
-                                    .then(() => {console.log("insert Project success");})
-                                    .catch((err) => {console.log("insert Project err = "+err);})
-                                  }
-                      }
+                        if(company_name.length == 0)
+                        {
+                          if(typeof(user_project) === 'string')
+                          {
+                            Project_employee.create({
+                                  uid: new_uid, pid: user_project
+                            })
+                              .then(() => {console.log("insert project_employee success string");})
+                              .catch((err) => {console.log("insert project_employee err = "+err);})
+                          } 
+                          else
+                          {
+                            for(let i = 0 ; i < user_project.length ; i++)
+                            {
+                              if(i < project_employee.length - 1)
+                              Project_employee.create({
+                                  uid: new_uid, pid: user_project[i]
+                              })
+                              else{
+                                Project_employee.create({
+                                  uid: new_uid, pid: user_project[i]
+                                })
+                                .then(() => {console.log("insert project_employee success array");})
+                                .catch((err) => {console.log("insert project_employee err = "+err);})
+                              }
+                            } 
+                          }
+                        }
                   console.log('add successfully');
                   return res.redirect('/manage/employee');
                   })
@@ -233,14 +383,22 @@ const employeeController = {
     Employee.findByPk(req.params.id)
       .then(employee => {
             Project.findAll({
-              where: {uid:  req.params.id},
             })
             .then(project => {
                   Experience.findAll({
                     where: {uid:  req.params.id},
                   })
                   .then(experience => {
-                    res.render('manage_employee_edit', { employee, project, experience });
+                      Project_employee.findAll({
+                        where: {uid:  req.params.id},
+                      })
+                      .then(project_employee => {
+                        res.render('manage_employee_edit', { employee, project, experience, project_employee });
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                        return next();
+                      });
                   })
                   .catch((err) => {
                     console.log(err);
@@ -387,48 +545,48 @@ const employeeController = {
                 /* findAll project */
                 /* findAll project */
                 /* findAll project */
-                Project.findAll({
+                Project_employee.findAll({
                   where: {uid:  req.params.id},
                 })
-                .then((project) => {
-                  console.log("project.length = "+project.length);
-                  console.log("project = "+JSON.stringify(project));
-                  const {project_company, project_name, start_year, end_year} = req.body;
+                .then((project_employee) => {
+                  console.log("project_employee.length = "+project_employee.length);
+                  console.log("project_employee = "+JSON.stringify(project_employee));
+                  const {user_project} = req.body;
                   /* delete project */
-                  if(project.length !== 0)
+                  if(project_employee.length !== 0)
                   {
-                    for(let x = 0 ; x < project.length ; x++)
+                    for(let x = 0 ; x < project_employee.length ; x++)
                     {
-                      if(x < project.length - 1)
-                      project[x].destroy({where: {uid:  req.params.id}})
+                      if(x < project_employee.length - 1)
+                      project_employee[x].destroy({where: {uid:  req.params.id}})
                       else {
-                        project[x].destroy({where: {uid:  req.params.id}})
-                        /* 寫入 project */ 
+                        project_employee[x].destroy({where: {uid:  req.params.id}})
+                        /* 寫入 project_employee */ 
                         .then(() => {
-                              console.log("typeof(project_company) = "+typeof(project_company));
-                              console.log("insert project success");
-                              if(typeof(project_company) === 'string')
+                              console.log("typeof(user_project) = "+typeof(user_project));
+                              console.log("insert project_employee success");
+                              if(typeof(user_project) === 'string')
                               {
-                                Project.create({
-                                      uid: req.params.id, project_company: project_company, project_name: project_name, start_year: start_year, end_year:  end_year
+                                Project_employee.create({
+                                      uid: req.params.id, pid: user_project
                                 })
-                                  .then(() => {console.log("insert project success string");})
-                                  .catch((err) => {console.log("insert project err = "+err);})
+                                  .then(() => {console.log("insert project_employee success string");})
+                                  .catch((err) => {console.log("insert project_employee err = "+err);})
                               } 
                               else
                               {
-                                for(let i = 0 ; i < project_company.length ; i++)
+                                for(let i = 0 ; i < user_project.length ; i++)
                                 {
-                                  if(i < project.length - 1)
-                                  Project.create({
-                                      uid: req.params.id, project_company: project_company[i], project_name: project_name[i], start_year: start_year[i], end_year:  end_year[i]
+                                  if(i < project_employee.length - 1)
+                                  Project_employee.create({
+                                      uid: req.params.id, pid: user_project[i]
                                   })
                                   else{
-                                    Project.create({
-                                      uid: req.params.id, project_company: project_company[i], project_name: project_name[i], start_year: start_year[i], end_year:  end_year[i]
+                                    Project_employee.create({
+                                      uid: req.params.id, pid: user_project[i]
                                     })
-                                    .then(() => {console.log("insert project success array");})
-                                    .catch((err) => {console.log("insert project err = "+err);})
+                                    .then(() => {console.log("insert project_employee success array");})
+                                    .catch((err) => {console.log("insert project_employee err = "+err);})
                                   }
                                 } 
                               }
@@ -440,36 +598,36 @@ const employeeController = {
                     }
                   }
                   else{
-                        console.log("typeof(project_company) = "+typeof(project_company));
-                        console.log("insert project success");
-                        if(typeof(project_company) === 'string')
+                        console.log("typeof(user_project) = "+typeof(user_project));
+                        console.log("insert project_employee success");
+                        if(typeof(user_project) === 'string')
                         {
-                          Project.create({
-                              uid: req.params.id, project_company: project_company, project_name: project_name, start_year: start_year, end_year:  end_year
+                          Project_employee.create({
+                              uid: req.params.id, pid: user_project
                           })
-                            .then(() => {console.log("insert project success string");})
-                            .catch((err) => {console.log("insert project err = "+err);})
+                            .then(() => {console.log("insert project_employee success string");})
+                            .catch((err) => {console.log("insert project_employee err = "+err);})
                         } 
                         else
                         {
-                          for(let i = 0 ; i < project_company.length ; i++)
+                          for(let i = 0 ; i < user_project.length ; i++)
                           {
-                            if(i < project.length - 1)
-                            Project.create({
-                              uid: req.params.id, project_company: project_company[i], project_name: project_name[i], start_year: start_year[i], end_year:  end_year[i]
+                            if(i < project_employee.length - 1)
+                            Project_employee.create({
+                              uid: req.params.id, pid: user_project[i]
                             })
                             else{
-                              Project.create({
-                                uid: req.params.id, project_company: project_company[i], project_name: project_name[i], start_year: start_year[i], end_year:  end_year[i]
+                              Project_employee.create({
+                                uid: req.params.id, pid: user_project[i]
                               })
-                              .then(() => {console.log("insert project success array");})
-                              .catch((err) => {console.log("insert project err = "+err);})
+                              .then(() => {console.log("insert project_employee success array");})
+                              .catch((err) => {console.log("insert project_employee err = "+err);})
                             }
                           } 
                         }
                   }
                 })
-                .catch((err)=>{console.log("project findAll error = "+err)});
+                .catch((err)=>{console.log("project_employee findAll error = "+err)});
                 /* project end */
                 /* project end */
                 /* project end */
@@ -490,16 +648,68 @@ const employeeController = {
   },
 
   delete: (req, res) => {
-    Employee.findByPk(req.body.id)
-      .then((employee) => {
-        console.log('delete successfully');
-        employee.destroy();
-        return res.redirect('/manage/employee');
+    // Employee.findByPk(req.body.id)
+    //   .then((employee) => {
+    //         employee.destroy();
+    //         Experience.findAll({where: {uid:  req.params.id}})
+    //         .then((experience) => {
+    //               experience.destroy();
+    //               Project_employee.findAll({where: {uid:  req.params.id}})
+    //               .then((project_employee) => {
+    //                 console.log('delete successfully');
+    //                 project_employee.destroy();
+    //                 return res.redirect('/manage/employee');
+    //               })
+    //               .catch((err) => {
+    //                 console.log(err);
+    //                 return res.redirect('/manage/employee');
+    //               });
+    //         })
+    //         .catch((err) => {
+    //           console.log(err);
+    //           return res.redirect('/manage/employee');
+    //         });
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //     return res.redirect('/manage/employee');
+    //   });
+
+      Employee.destroy({
+        where: { uid:  req.body.id }
+      })
+      .then(() => {
+          console.log('delete Employee successfully');
+          Experience.destroy({
+            where: { uid:  req.body.id }
+          })
+          .then(() => {
+                console.log('delete Experience successfully');
+                Project_employee.destroy({
+                  where: { uid:  req.body.id }
+                })
+                .then(() => {
+                    console.log('delete Project_employee successfully');
+                    return res.redirect('/manage/employee');
+                })
+                .catch((err) => {
+                  console.log("Project_employee destroy: "+err);
+                  return res.redirect('/manage/employee');
+                });
+          })
+          .catch((err) => {
+            console.log("Experience destroy: "+err);
+            return res.redirect('/manage/employee');
+          });
+
       })
       .catch((err) => {
-        console.log(err);
+        console.log("Employee destroy: "+err);
         return res.redirect('/manage/employee');
       });
+    
+
+    
   },
 };
 
